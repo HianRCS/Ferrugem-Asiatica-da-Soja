@@ -50,7 +50,7 @@ format:
     fontsize: 1.1em
     theme:
       dark: slate
-      light: solar
+      light: flatly
     code-copy: true
     code-overflow: wrap
     warning: false

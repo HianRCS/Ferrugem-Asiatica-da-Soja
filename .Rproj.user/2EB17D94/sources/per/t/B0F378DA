@@ -1,9 +1,9 @@
 {
     "id": "B0F378DA",
-    "path": "~/GitHub/ferrugem_soja/_quarto.yml",
+    "path": "~/GitHub/Ferrugem-Asiatica-da-Soja/_quarto.yml",
     "project_path": "_quarto.yml",
     "type": "yaml",
-    "hash": "1008571194",
+    "hash": "2781883143",
     "contents": "",
     "dirty": false,
     "created": 1719922199553.0,
@@ -16,11 +16,11 @@
         "scrollLine": "29"
     },
     "folds": "",
-    "lastKnownWriteTime": 1719930942,
+    "lastKnownWriteTime": 1719935394,
     "encoding": "UTF-8",
     "collab_server": "",
     "source_window": "",
-    "last_content_update": 1719930942166,
+    "last_content_update": 1719935394,
     "read_only": false,
     "read_only_alternatives": []
 }
