@@ -1,0 +1,5 @@
+"0",""
+"0","prod |>"
+"0","  ggplot(aes(`PMG (g)`, `Produtividade (kg/ha)`,"
+"0","             color = Tratamentos))+"
+"0","    geom_point()"

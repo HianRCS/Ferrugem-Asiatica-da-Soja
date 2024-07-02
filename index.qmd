@@ -1,0 +1,10 @@
+---
+title: "FERRRUGEM DA SOJA"
+---
+
+Este site foi desenvolvido com o objetivo de analisar a progressão da ferrugem asiática da soja (*Phakopsora pachyrhizi*) em resposta à aplicação de diferentes métodos de controle da doença. Além disso, foram avaliados os impactos desses métodos na produtividade das plantas, no peso de mil grãos e na desfolha. 
+
+
+![](fer.jpeg){fig-align="center" width="500"}
+
+Detentor dos dados analisados: Prof. Dr. Fabrício de Ávila Rodrigues.

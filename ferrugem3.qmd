@@ -1,0 +1,101 @@
+---
+authors: "David e Hian"
+format: html
+---
+
+# Avaliando a eficácia do produto nos estágios iniciais da doença
+
+Vamos criar um filtro para a severidade entre os 37 e 60 dias após a emergência
+```{r warning=FALSE, message=FALSE}
+library(gsheet)
+library(tidyverse)
+
+sev <- gsheet2tbl("https://docs.google.com/spreadsheets/d/1D_tSkv6calLSIxxzwG_qiMH3cBlG1Y0B/edit#gid=238991737")
+
+sev_inicial <- sev[1:80, ]
+
+```
+
+## AUDPC para a epidemia inicial
+```{r warning=FALSE, message=FALSE}
+library(epifitter)
+
+curve_inicial <- sev_inicial |>
+  group_by(Tratamentos, Blocos) |> 
+  summarise(AACPD = AUDPC(DAE, Sev))
+
+
+```
+
+## Anova para essa variável que acabamos de criar:
+```{r warning=FALSE, message=FALSE}
+aov_aacpd.i <- aov(AACPD ~ Tratamentos + Blocos, data = curve_inicial)
+
+anova(aov_aacpd.i)
+
+```
+
+### Checando as premissas:
+```{r warning=FALSE, message=FALSE}
+library(performance)
+
+check_normality(aov_aacpd.i)
+
+```
+
+```{r}
+check_heteroscedasticity(aov_aacpd.i)
+
+```
+
+### Transformando novamente:
+```{r warning=FALSE, message=FALSE}
+library(MASS)
+b <- boxcox(lm(curve_inicial$AACPD+0.1 ~ 1))
+lambda <- b$x[which.max(b$y)]
+
+curve_inicial$AACPD_2 <- (curve_inicial$AACPD ^ lambda - 1) / lambda
+
+```
+
+### ANOVA para os dados transformados
+```{r warning=FALSE, message=FALSE}
+aov_aacpd.ii <- aov(AACPD_2 ~ Tratamentos + Blocos, data = curve_inicial)
+
+anova(aov_aacpd.ii)
+
+```
+
+### Checando as premissas:
+```{r warning=FALSE, message=FALSE}
+check_normality(aov_aacpd.ii)
+
+```
+
+```{r warning=FALSE, message=FALSE}
+check_heteroscedasticity(aov_aacpd.ii)
+
+```
+
+## Testes de médias
+```{r warning=FALSE, message=FALSE}
+library(emmeans)
+
+medias_aacpd.i <- emmeans(aov_aacpd.ii, ~ Tratamentos)
+
+medias_aacpd.i
+
+```
+
+```{r warning=FALSE, message=FALSE}
+pwpm(medias_aacpd.i)
+
+```
+
+```{r warning=FALSE, message=FALSE}
+library(multcomp)
+
+cld(medias_aacpd.i, Letters = letters)
+
+```
+Os tratamentos são agrupados em três grupos distintos (a, b, c) com base nas comparações múltiplas de Tukey. Tratamentos que compartilham a mesma letra não são significativamente diferentes entre si.

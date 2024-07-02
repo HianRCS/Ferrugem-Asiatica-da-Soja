@@ -1,0 +1,67 @@
+---
+authors: "David e Hian"
+format: html
+---
+
+# Correlação de Variáveis
+
+Inicialmente, vamos reunir todas as variáveis exploradas em um único data.frame
+
+```{r warning=FALSE, message=FALSE}
+# Repassando as importações
+
+library(gsheet)
+library(epifitter)
+library(MASS)
+library(tidyverse)
+
+sev <- gsheet2tbl("https://docs.google.com/spreadsheets/d/1D_tSkv6calLSIxxzwG_qiMH3cBlG1Y0B/edit#gid=238991737") # Dados brutos de severidade
+
+prod <- gsheet2tbl("https://docs.google.com/spreadsheets/d/1D_tSkv6calLSIxxzwG_qiMH3cBlG1Y0B/edit#gid=123849322") # Dados fitotécnicos coletados
+
+sev_curve <- sev |> 
+  group_by(Tratamentos, Blocos) |> 
+  summarise(AACPD = AUDPC(DAE, Sev))
+b <- boxcox(lm(sev_curve$AACPD+0.1 ~ 1))
+lambda <- b$x[which.max(b$y)]
+sev_curve$AACPD_2 <- (sev_curve$AACPD ^ lambda - 1) / lambda # Primeiros dados de AACPD transformados
+
+sev_max <- sev |> 
+  filter(DAE == 82)
+b <- boxcox(lm(sev_max$Sev+0.1 ~ 1))
+lambda <- b$x[which.max(b$y)]
+sev_max$Sev2 <- (sev_max$Sev ^ lambda - 1) / lambda # Dadoos de Y max transformados
+
+sev_inicial <- sev[1:80, ]
+curve_inicial <- sev_inicial |>
+  group_by(Tratamentos, Blocos) |> 
+  summarise(AACPD = AUDPC(DAE, Sev))
+b <- boxcox(lm(curve_inicial$AACPD+0.1 ~ 1))
+lambda <- b$x[which.max(b$y)]
+curve_inicial$AACPD_2 <- (curve_inicial$AACPD ^ lambda - 1) / lambda # Dados de AACPD até 60 dias transformados
+
+```
+
+
+Criando o data.frame dando o nome de "dados.gerais":
+```{r warning=FALSE, message=FALSE}
+dados.gerais <- prod
+dados.gerais$AACPD <- sev_curve$AACPD_2
+dados.gerais$Ymax <- sev_max$Sev2
+dados.gerais$AACPD.i <- curve_inicial$AACPD_2
+
+dados.gerais
+
+```
+
+Por fim, realizaremos a análise de correlação das variáveis analisadas utilizando a função `corgraph` do pacote **AgroR**.
+```{r warning=FALSE, message=FALSE}
+library(AgroR)
+
+correl <- dados.gerais |> 
+  dplyr::select(`Desfolha (%)`, `PMG (g)`,
+                `Produtividade (kg/ha)`, AACPD, Ymax, AACPD.i)
+
+corgraph(correl)
+
+```

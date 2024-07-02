@@ -1,0 +1,61 @@
+project:
+  type: website
+  output-dir: docs
+  
+execute: 
+  cache: true
+  freeze: auto
+
+website:
+  title: "Ferrugem da Soja"
+  favicon: fer.jpeg
+  
+  navbar:
+   pinned: true
+   background: "#323f45"
+   left:
+   - text: Sobre
+     icon: house
+     href: index.qmd
+   - text: Estudos de Severidade
+     menu: 
+       - href: Ferrugem.qmd
+         text: Área Abaixo da Curva de Progresso da Doença (AACPD)
+       - href: ferrugem2.qmd
+         text: Severidade Máxima (Y max)
+       - href: ferrugem3.qmd
+         text: AACPD Inicial
+   - text: Produtividade
+     href: produtividade.qmd
+   - text: Análise de Correlação
+     href: ferrugem5.qmd
+     
+   right:
+       - icon: github
+         menu: 
+            - text: Hian Rodrigo Costa Silva
+              url: https://github.com/HianRCS
+            - text: David Aimar
+              url: https://github.com/davidaimar
+              
+              
+  page-navigation: true
+  page-footer: 
+    left: "Copyright 2024, Hian Rodrigo Costa Silva & David Aimar"
+    background: "#323f45"
+
+
+format:
+  html:
+    fontsize: 1.1em
+    theme:
+      dark: slate
+      light: solar
+    code-copy: true
+    code-overflow: wrap
+    warning: false
+    toc: true
+
+editor: visual
+
+

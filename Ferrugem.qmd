@@ -1,0 +1,148 @@
+---
+authors: "David e Hian"
+format: html
+---
+
+# Importando os dados
+
+Importação através da função `gsheet2tbl` do pacote  **gsheet**.
+```{r, message=FALSE, warning=FALSE}
+library(gsheet)
+sev <- gsheet2tbl("https://docs.google.com/spreadsheets/d/1D_tSkv6calLSIxxzwG_qiMH3cBlG1Y0B/edit#gid=238991737")
+
+```
+
+# Vizualização gráfica
+
+```{r message=FALSE, warning=FALSE}
+library(tidyverse)
+library(ggthemes)
+
+```
+
+```{r, warning=FALSE, message=FALSE}
+sev_med <- sev|>
+  group_by(Tratamentos, DAE) |> 
+  summarise(Sev_media = mean(Sev), DAE = DAE)
+
+sev_med |> 
+  ggplot(aes(DAE, Sev_media, color = Tratamentos))+
+  geom_point(color = "black")+
+  geom_line()+
+  theme_few()+
+  labs(x = "Dias", y = "Severidade", title = "Progresso da Ferrugem asiática da Soja")
+
+```
+
+# Área abaixo da cruva de progresso da doença (AACPD)
+```{r warning=FALSE, message=FALSE}
+library(epifitter)
+
+sev_curve <- sev |> 
+  group_by(Tratamentos, Blocos) |> 
+  summarise(AACPD = AUDPC(DAE, Sev))
+
+```
+
+## Análise estatística
+
+Realizando a análise de variância (ANOVA) em para dados de experimentos delineados em blocos ao acaso (DBC)
+```{r warning=FALSE, message=FALSE}
+aov_aacpd <- aov(AACPD ~ Tratamentos + Blocos, data = sev_curve)
+
+anova(aov_aacpd)
+
+```
+### Checando as premissas: 
+```{r warning=FALSE, message=FALSE}
+shapiro.test(aov_aacpd$residuals)
+
+```
+```{r}
+bartlett.test(AACPD ~ Tratamentos, data = sev_curve)
+
+```
+Pelo teste de Bartlett os dados não apresentam homogeneidade de variância. Vamos refazer os testes através das funções 'check_normality' e 'check_heteroscedasticity' do pacote **performance** que também pode ser utilizado.
+
+```{r warning=FALSE, message=FALSE}
+library(performance)
+check_normality(aov_aacpd)
+
+```
+
+```{r warning=FALSE, message=FALSE}
+check_heteroscedasticity(aov_aacpd)
+
+```
+Os resultados se mantêm, havendo necessidade de transformação dos dados.
+
+## Transformação por boxcox
+```{r warning=FALSE, message=FALSE}
+library(MASS)
+
+b <- boxcox(lm(sev_curve$AACPD+0.1 ~ 1))
+lambda <- b$x[which.max(b$y)]
+
+sev_curve$AACPD_2 <- (sev_curve$AACPD ^ lambda - 1) / lambda
+
+```
+
+## ANOVA com os dados transformados
+```{r warning=FALSE, message=FALSE}
+
+
+aov_aacpd_2 <- aov(AACPD_2 ~ Tratamentos + Blocos, data = sev_curve)
+
+anova(aov_aacpd_2)
+
+```
+
+### Checando as premissas novamente
+
+Via testes: 
+```{r warning=FALSE, message=FALSE}
+shapiro.test(aov_aacpd_2$residuals)
+
+```
+
+```{r warning=FALSE, message=FALSE}
+bartlett.test(AACPD_2 ~ Tratamentos, data = sev_curve)
+
+```
+
+Via performance:
+```{r warning=FALSE, message=FALSE}
+check_normality(aov_aacpd_2)
+
+```
+
+```{r warning=FALSE, message=FALSE}
+check_heteroscedasticity(aov_aacpd_2)
+
+```
+### Testes de comparação de médias
+
+```{r warning=FALSE, message=FALSE}
+library(emmeans)
+
+medias_sev <- emmeans(aov_aacpd_2, ~ Tratamentos)
+
+medias_sev
+
+```
+
+```{r warning=FALSE, message=FALSE}
+pwpm(medias_sev)
+
+```
+
+```{r warning=FALSE, message=FALSE}
+library(multcomp)
+
+cld(medias_sev, Letters = letters)
+
+```
+Os tratamentos são agrupados em letras ('a' e 'b'). Tratamentos que compartilham a mesma letra não são significativamente diferentes entre si.
+
+F + Produto e Fungicida (F) estão no grupo 'a'.
+Produto e Controle estão no grupo 'b'.

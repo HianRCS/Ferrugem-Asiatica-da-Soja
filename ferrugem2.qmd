@@ -1,0 +1,123 @@
+---
+authors: "David e Hian"
+format: html
+---
+
+# Valores de Y max
+
+A variável `Y max` representa a severidade máxima da doença, ou seja, o valor máximo que a doença atinge ao longo do tempo.  A partir da severidade máxima, é possível avaliar a eficácia de diferentes estratégias de controle de doenças.
+
+Dito isso, realizamos uma filtragem dos valores de severidade da doença no tempo máximo (82 dias após a emergência da cultura)
+
+```{r, message=FALSE, warning=FALSE}
+library(tidyverse)
+library(ggthemes)
+library(gsheet)
+
+sev <- gsheet2tbl("https://docs.google.com/spreadsheets/d/1D_tSkv6calLSIxxzwG_qiMH3cBlG1Y0B/edit#gid=238991737")
+
+sev_max <- sev |> 
+  filter(DAE == 82)
+
+sev_max
+
+```
+
+## Vizualização gráfica
+
+```{r warning=FALSE, message=FALSE}
+sev_max |> 
+  ggplot(aes(Tratamentos, Sev, fill = Tratamentos))+
+  geom_col()+
+  labs(x = "Tratamentos", y = "Y max", title = "Vlores de Severidade Máxima da Ferrugem Asiática da Soja")+
+  theme_few()
+
+```
+
+## Anova para essa nova variável
+```{r warning=FALSE, message=FALSE}
+aov_ymax <- aov(Sev ~ Tratamentos + Blocos,
+             data = sev_max)
+
+anova(aov_ymax)
+
+```
+
+### Checando as premissas mais uma vez:
+```{r warning=FALSE, message=FALSE}
+shapiro.test(aov_ymax$residuals)
+
+```
+
+```{r warning=FALSE, message=FALSE}
+bartlett.test(Sev~ Tratamentos, data = sev_max)
+
+```
+
+Usando o **performance**:
+```{r warning=FALSE, message=FALSE}
+library(performance)
+check_normality(aov_ymax)
+
+```
+
+```{r warning=FALSE, message=FALSE}
+check_heteroscedasticity(aov_ymax)
+
+```
+
+## Transformação dos dados
+
+Realizando a transformação dos dados dessa variável por boxcox, temos:
+```{r warning=FALSE, message=FALSE}
+library(MASS)
+b <- boxcox(lm(sev_max$Sev+0.1 ~ 1))
+lambda <- b$x[which.max(b$y)]
+
+sev_max$Sev2 <- (sev_max$Sev ^ lambda - 1) / lambda
+
+```
+
+### Anova para os dados após a transformação:
+```{r warning=FALSE, message=FALSE}
+aov_ymax2 <- lm(Sev2 ~ Tratamentos + Blocos,
+             data = sev_max)
+
+anova(aov_ymax2)
+
+```
+
+Checando premissas via **performance**:
+```{r warning=FALSE, message=FALSE}
+check_normality(aov_ymax2)
+
+```
+
+```{r warning=FALSE, message=FALSE}
+check_heteroscedasticity(aov_ymax2)
+
+```
+
+### Testes de comparação de médias
+```{r warning=FALSE, message=FALSE}
+library(emmeans)
+
+medias_ymax <- emmeans(aov_ymax2, ~ Tratamentos)
+
+medias_ymax
+
+```
+
+```{r warning=FALSE, message=FALSE}
+pwpm(medias_ymax)
+
+```
+
+```{r warning=FALSE, message=FALSE}
+library(multcomp)
+
+cld(medias_ymax, Letters = letters)
+
+```
+Os tratamentos foram agrupados em três grupos distintos (a, b, c) com base nas comparações múltiplas de Tukey. Tratamentos que compartilham a mesma letra não são significativamente diferentes entre si.
+
