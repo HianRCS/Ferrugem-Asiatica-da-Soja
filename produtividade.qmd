@@ -1,6 +1,7 @@
 ---
 editor: visual
 ---
+
 # Pacotes usados para rodar os progamas para visualizar a produtividade o peso de mil grãos e desfolha do trabalho
 
 ```{r, warning=FALSE, message=FALSE}
@@ -22,7 +23,6 @@ library(DHARMa)
 ```
 
 # Testes estatísticos e análises da produtividade peso de mil grãos e desfolha
-
 
 ```{r warning=FALSE, message=FALSE}
 
@@ -109,4 +109,3 @@ prod |>
 
 
 ```
-

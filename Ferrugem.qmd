@@ -30,7 +30,7 @@ sev_med |>
   geom_point(color = "black")+
   geom_line()+
   theme_few()+
-  labs(x = "Dias", y = "Severidade", title = "Progresso da Ferrugem asiática da Soja")
+  labs(x = "Dias", y = "Severidade", title = "Progresso da Ferrugem Asiática da Soja")
 
 ```
 
