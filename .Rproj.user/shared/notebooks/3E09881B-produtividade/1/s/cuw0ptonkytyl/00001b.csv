@@ -1,5 +1,0 @@
-"0",""
-"0","prod |>"
-"0","  ggplot(aes(Tratamentos, `Produtividade (kg/ha)`,"
-"0","             fill = Tratamentos))+"
-"0","  geom_col()"

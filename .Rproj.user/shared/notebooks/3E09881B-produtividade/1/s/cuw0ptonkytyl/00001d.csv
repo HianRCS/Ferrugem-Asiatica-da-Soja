@@ -1,5 +1,0 @@
-"0",""
-"0","prod |>"
-"0","  ggplot(aes(Tratamentos, `Desfolha (%)`,"
-"0","             fill = Tratamentos))+"
-"0","  geom_col()"
